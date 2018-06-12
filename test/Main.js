@@ -9,8 +9,32 @@ const computeCost = async (receipt) => {
   return gasPrice.times(receipt.gasUsed);
 }
 
+const C = artifacts.require("./MineableToken.sol");
+
 // Time for the real work
 contract('Token Tests', function(accounts) {
+
+  /**
+   * owner        - address that should be assigned as owner of deployed contract
+   * miner        - address that mines Tokens
+   * _name        - the name of the Token
+   * _symbol      - the symbol for the Token
+   * _decimals    - number of decimal places that token uses
+   */
+  const [owner, miner] = accounts;
+  const _name = "TOKEN NAME";
+  const _symbol = "SYM";
+  const _decimals = 18;
+  let c;
+
+  /**
+   * Runs once at start of test suite
+   */
+  before(async function() {
+
+      // deploy contract with parameters for testing
+      contract = await C.new(_name, _symbol, _decimals);
+  });
 
   //Base contract tests
   it("should have an address", async function () {
