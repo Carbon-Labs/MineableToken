@@ -1,0 +1,31 @@
+{
+  "name": "mineabletoken",
+  "version": "1.0.0",
+  "description": "Mineable Token (ERC918) with gas limit control",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liberation-online/MineableToken.git"
+  },
+  "author": "Adam Martin <Liberation Online>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/liberation-online/MineableToken/issues"
+  },
+  "homepage": "https://github.com/liberation-online/MineableToken#readme",
+  "dependencies": {
+    "openzeppelin-solidity": "^1.10.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^2.0.2",
+    "solidity-coverage": "^0.5.4"
+  }
+}
