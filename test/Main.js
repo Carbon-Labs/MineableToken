@@ -264,7 +264,7 @@ contract('Token Tests', function(accounts) {
 
     await contract.approve(accounts[1], 0, {from: accounts[0]}); //reset
   });
-
+/*
   it("should allow transferFrom() when properly approved and unpaused", async function() {
     throw new Error("test not written yet")
   });
@@ -272,31 +272,108 @@ contract('Token Tests', function(accounts) {
   it("should allow transfer() of Tokens by address owner when unpaused", async function() {
     throw new Error("test not written yet")
   });
+*/
 
   //Gas Limit Functions
-  it("should allow setting of gas price by owner when unpaused", async function() {
-    throw new Error("test not written yet")
-  });
+  it("should allow setting of gas price by owner", async function() {
 
-  it("should not allow setting of gas price by owner when paused", async function() {
-    throw new Error("test not written yet")
+    let newGasPrice = 5;
+
+    let { logs } = await contract.setGasPriceLimit(newGasPrice, {from: accounts[0]});
+    let { event, args } = logs[0];
+
+    let gasPrice = await (contract.gasPriceLimit());
+
+    gasPrice.should.bignumber.equal(newGasPrice);
+    event.should.equal('GasPriceSet');
   });
 
   it("should only allow setting of gas price by owner", async function() {
-    throw new Error("test not written yet")
+    let curGasPrice = await (contract.gasPriceLimit());
+    let newGasPrice = 10;
+
+    await contract.setGasPriceLimit(
+      newGasPrice,
+      {from: accounts[1]}).should.be.rejectedWith(EVMThrow);
+
+    let gasPrice = await (contract.gasPriceLimit());
+    gasPrice.should.bignumber.equal(curGasPrice);
   });
 
   it("should not allow setting of gas price to 0", async function() {
-    throw new Error("test not written yet")
+    let curGasPrice = await (contract.gasPriceLimit());
+    let newGasPrice = 0;
+
+    await contract.setGasPriceLimit(
+      newGasPrice,
+      {from: accounts[0]}).should.be.rejectedWith(EVMThrow);
+
+    let gasPrice = await (contract.gasPriceLimit());
+
+    gasPrice.should.bignumber.above(0);
+    gasPrice.should.bignumber.equal(curGasPrice);
+
+  });
+
+  it("should not allow setting of gas price to null", async function() {
+    let curGasPrice = await (contract.gasPriceLimit());
+
+    await contract.setGasPriceLimit(
+      null,
+      {from: accounts[0]}).should.be.rejectedWith(EVMThrow);
+
+    let gasPrice = await (contract.gasPriceLimit());
+
+    gasPrice.should.bignumber.above(0);
+    gasPrice.should.bignumber.equal(curGasPrice);
+
   });
 
   //Mineable Functions
   it("should reject mining solution if txn gas price is higher than gas price limit", async function() {
-    throw new Error("test not written yet")
+
+    //it seems we can't set the transaction gas on the fly here with the way truffle works
+    //instead we have set truffle gasPrice to 5000000000 (in truffle.js)
+    //and now we can test by making the curGasPrice lower
+
+    let newGasPrice = 4; //4000000000
+    await contract.setGasPriceLimit(newGasPrice, {from: accounts[0]});
+
+    let curGasPrice = await (contract.gasPriceLimit());
+    let txnGasPrice = 5;
+
+    await contract.mint(
+      {gasprice: txnGasPrice} //this is not needed, but leaving here for now in case I find a way to get truffle to accept this value
+    ).should.be.rejectedWith(EVMThrow);
+
+  });
+
+  it("should accept mining solution if txn gas price is equal to gas price limit", async function() {
+
+    let newGasPrice = 5; //5000000000
+    await contract.setGasPriceLimit(newGasPrice, {from: accounts[0]});
+
+    let curGasPrice = await (contract.gasPriceLimit());
+    let txnGasPrice = 5;
+
+    await contract.mint(
+      {gasprice: txnGasPrice} //this is not needed, but leaving here for now in case I find a way to get truffle to accept this value
+    );
+
   });
 
   it("should accept mining solution if txn gas price is lower than gas price limit", async function() {
-    throw new Error("test not written yet")
+
+    let newGasPrice = 6; //6000000000
+    await contract.setGasPriceLimit(newGasPrice, {from: accounts[0]});
+
+    let curGasPrice = await (contract.gasPriceLimit());
+    let txnGasPrice = 5;
+
+    await contract.mint(
+      {gasprice: txnGasPrice} //this is not needed, but leaving here for now in case I find a way to get truffle to accept this value
+    );
+
   });
 
 });
