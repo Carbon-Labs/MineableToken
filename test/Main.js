@@ -81,6 +81,32 @@ contract('Token Tests', function(accounts) {
     decimals.should.bignumber.equal(_decimals);
   });
 
+  it("should return the correct totalSupply_", async function() {
+    let totalSupply = await contract.totalSupply();
+    totalSupply.should.bignumber.equal(1000000 * 1000000000000000000); //TODO: remove the hardcoding here
+  });
+
+  it("should return the correct maxSupplyForEra", async function() {
+    let maxSupplyForEra = await contract.maxSupplyForEra();
+    let totalSupply = await (contract.totalSupply());
+    maxSupplyForEra.should.deep.equal(totalSupply.div(2));
+  });
+
+  it("should return the latestDifficultyPeriodStarted", async function() {
+    let latestDifficultyPeriodStarted = await contract.latestDifficultyPeriodStarted();
+    latestDifficultyPeriodStarted.should.be.bignumber.above(0); //TODO - check for correct block number
+  });
+
+  it("should return the epochCount", async function() {
+    let epochCount = await contract.epochCount();
+    epochCount.should.be.bignumber.equal(0);
+  })
+
+  it("should not accept ETH deposits", async function() {
+    let xferAmt = 1;
+    await contract.sendTransaction({value: xferAmt}).should.be.rejectedWith(EVMThrow);
+  });
+
   it("should set owner on contract creation when Ownable", async function() {
     (await contract.owner()).should.equal(owner);
   });
@@ -330,6 +356,11 @@ contract('Token Tests', function(accounts) {
   });
 
   //Mineable Functions
+  it("should return the correct tokensMinted value", async function() {
+      let tokensMinted = await contract.tokensMinted();
+      tokensMinted.should.be.bignumber.equal(0); //new contract - no mining yet
+  });
+
   it("should reject mining solution if txn gas price is higher than gas price limit", async function() {
 
     //it seems we can't set the transaction gas on the fly here with the way truffle works
@@ -376,6 +407,11 @@ contract('Token Tests', function(accounts) {
 
   });
 
+  it("should return the correct mining reward era", async function() {
+    let rewardEra = await contract.rewardEra();
+    rewardEra.should.be.bignumber.equal(1);
+  });
+
   it("should return the current challenge number when requested", async function() {
 
     let challengeNumber = await contract.getChallengeNumber();
@@ -394,7 +430,8 @@ contract('Token Tests', function(accounts) {
 
   it("should return the current mining reward when requested", async function() {
     let miningReward = await contract.getMiningReward();
-    miningReward.should.be.bignumber.above(0); // TODO - check for correct value
-  })
+    miningReward.should.be.bignumber.equal(50 * 1000000000000000000); // TODO - check for correct value and decimals from constructor
+  });
+
 
 });

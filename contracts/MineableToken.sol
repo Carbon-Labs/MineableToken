@@ -26,19 +26,19 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
   // Events
   event GasPriceSet(uint8 _gasPrice);
   event Mint(address indexed from, uint reward_amount, uint epochCount, bytes32 newChallengeNumber);
-  event Debug(uint256 txGas, uint256 curGasPriceLimit);
+  event Debug(uint256 txGas, uint256 curGasPriceLimit); //TODO - remove this once contract finalised
 
   // Variables
-  // ERC20
+  // ERC20 Standard
   string public name;               //Token name for display
   string public symbol;             //Token symbol for display
   uint8 public decimals;            //Number of decimal places
   uint public _totalSupply;
 
-  // Controls
+  // Owner Controls
   uint public gasPriceLimit;                     //Gas Price Limit
 
-  // Mineable
+  // Mineable Related
   address public lastRewardTo;
   bytes32 public challengeNumber;
   uint public miningTarget;
@@ -52,6 +52,7 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
   uint public lastRewardAmount;
   uint public lastRewardEthBlockNumber;
   uint public tokensMinted;
+  uint startingMiningReward;                      //this is not public, as mining reward will change over time
 
   mapping(address => uint) balances;
   mapping(address => mapping(address => uint)) allowed;
@@ -61,17 +62,42 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     name = _name;
     symbol = _symbol;
     decimals = _decimals;
-    gasPriceLimit = 999;
+    blocks_per_readjustment = 512;                // TODO: set in constructor
+    startingMiningReward = 50;                    // TODO: set in constructor
+    totalSupply_ = 1000000 * 10**uint(decimals);  // TODO: read from constructor
+
+    //default values - don't change unless you know what you are doing
     _min_target = 2**16;
     _max_target = 2**234;
-    blocks_per_readjustment = 512;
+    rewardEra = 1;
+    tokensMinted = 0;
+    maxSupplyForEra = totalSupply_.div(2);
+    latestDifficultyPeriodStarted = block.number;
 
+    //these are default values that will be overwritten by the contract automatically or
+    //can be changed by the contract owner calling a function
     miningTarget = _max_target;
+    gasPriceLimit = 999;
+
   }
 
-  modifier checkGasPrice(uint gasPrice) {
-    require(gasPrice > 0);
+  //modifier used for checking that the txn.gasPrice is lower than the limit set
+  modifier checkGasPrice(uint txnGasPrice) {
+    require(txnGasPrice <= gasPriceLimit * 1000000000);
     _;
+  }
+
+  // dont receive ether via fallback method (by not having 'payable' modifier on this function).
+  function () public { }
+
+  /**
+   * @dev transfer out any accidently sent ERC20 tokens
+   * @param tokenAddress The contract address of the token
+   * @param tokens The amount of tokens to transfer
+   * TODO - ERC20Interface missing
+   */
+  function transferAnyERC20Token(address tokenAddress, uint tokens) public onlyOwner returns (bool success) {
+    //return ERC20Interface(tokenAddress).transfer(owner, tokens);
   }
 
   /**
@@ -88,9 +114,9 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
    * @param _gasPrice The gas price in Gwei to set
    */
    function setGasPriceLimit(uint8 _gasPrice) onlyOwner
-    checkGasPrice(_gasPrice)
+    //checkGasPrice(_gasPrice)
     public {
-
+      require(_gasPrice > 0);
      gasPriceLimit = _gasPrice;
 
      emit GasPriceSet(_gasPrice); //emit event
@@ -117,13 +143,36 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
 
     //reward is cut in half every reward era (as tokens are mined)
     function getMiningReward() public constant returns (uint) {
-      //every reward era, the reward amount halves.
-      return (5000 * 10**uint(decimals) ).div( 2**rewardEra ) ; // TODO: remove hardcoded 5000 here.
+      if(rewardEra == 1) {
+        return startingMiningReward * 10**uint(decimals);
+      } else {
+
+        return (startingMiningReward * 10**uint(decimals) ).div( 2**(rewardEra-1) );
+      }
     }
 
-    function mint() public returns (bool success) {
-      //emit Debug(tx.gasprice, gasPriceLimit * 1000000000);
-      require(tx.gasprice <= gasPriceLimit * 1000000000);
+    function mint() checkGasPrice(tx.gasprice) public returns (bool success) {
+
+
+
+
+
+
       emit Debug(tx.gasprice, gasPriceLimit);
     }
+
+    //Useful for debugging miners
+    function getMintDigest(uint256 nonce, bytes32 challenge_digest, bytes32 challenge_number) public view returns (bytes32 digesttest) {
+      bytes32 digest = keccak256(challenge_number,msg.sender,nonce);
+      return digest;
+    }
+
+    //Useful for debugging miners
+    function checkMintSolution(uint256 nonce, bytes32 challenge_digest, bytes32 challenge_number, uint testTarget) public view returns (bool success) {
+      bytes32 digest = keccak256(challenge_number,msg.sender,nonce);
+      if(uint256(digest) > testTarget) revert();
+
+      return (digest == challenge_digest);
+    }
+
 }
