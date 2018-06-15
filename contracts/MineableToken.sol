@@ -65,6 +65,8 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     _min_target = 2**16;
     _max_target = 2**234;
     blocks_per_readjustment = 512;
+
+    miningTarget = _max_target;
   }
 
   modifier checkGasPrice(uint gasPrice) {

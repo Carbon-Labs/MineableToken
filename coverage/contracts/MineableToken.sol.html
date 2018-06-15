@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">76.47% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>13/17</span>
+        <span class='fraction'>18/18</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">75% </span>
@@ -30,18 +30,18 @@
         <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">55.56% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>5/9</span>
+        <span class='fraction'>9/9</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">77.78% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>14/18</span>
+        <span class='fraction'>19/19</span>
       </div>
     </div>
   </div>
-  <div class='status-line medium'></div>
+  <div class='status-line high'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -170,7 +170,9 @@
 125
 126
 127
-128</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+128
+129
+130</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -236,6 +238,8 @@
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -273,22 +277,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -364,6 +368,8 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     _min_target = 2**16;
     _max_target = 2**234;
     blocks_per_readjustment = 512;
+&nbsp;
+    miningTarget = _max_target;
   }
 &nbsp;
   modifier checkGasPrice(uint gasPrice) {
@@ -399,23 +405,23 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     //function mint(uint256 nonce, bytes32 challenge_digest) public returns (bool success);
     //function getMiningReward() public constant returns (uint);
 &nbsp;
-<span class="fstat-no" title="function not covered" >    function getChallengeNumber() public constant returns (bytes32</span>) {
-<span class="cstat-no" title="statement not covered" >        return challengeNumber;</span>
+    function getChallengeNumber() public constant returns (bytes32) {
+        return challengeNumber;
     }
 &nbsp;
-<span class="fstat-no" title="function not covered" >    function getMiningTarget() public constant returns (uint</span>) {
-<span class="cstat-no" title="statement not covered" >       return miningTarget;</span>
+    function getMiningTarget() public constant returns (uint) {
+       return miningTarget;
     }
 &nbsp;
     //the number of zeroes the digest of the PoW solution requires.  Auto adjusts
-<span class="fstat-no" title="function not covered" >    function getMiningDifficulty() public constant returns (uint</span>) {
-<span class="cstat-no" title="statement not covered" >      return _max_target.div(miningTarget);</span>
+    function getMiningDifficulty() public constant returns (uint) {
+      return _max_target.div(miningTarget);
     }
 &nbsp;
     //reward is cut in half every reward era (as tokens are mined)
-<span class="fstat-no" title="function not covered" >    function getMiningReward() public constant returns (uint</span>) {
+    function getMiningReward() public constant returns (uint) {
       //every reward era, the reward amount halves.
-<span class="cstat-no" title="statement not covered" >      return (5000 * 10**uint(decimals) ).div( 2**rewardEra ) ;</span> // TODO: remove hardcoded 5000 here.
+      return (5000 * 10**uint(decimals) ).div( 2**rewardEra ) ; // TODO: remove hardcoded 5000 here.
     }
 &nbsp;
     function mint() public returns (bool success) {
@@ -430,7 +436,7 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Jun 14 2018 18:00:33 GMT+0200 (CEST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 09:06:11 GMT+0200 (CEST)
 </div>
 </div>
 <script src="../prettify.js"></script>

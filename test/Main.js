@@ -376,4 +376,25 @@ contract('Token Tests', function(accounts) {
 
   });
 
+  it("should return the current challenge number when requested", async function() {
+
+    let challengeNumber = await contract.getChallengeNumber();
+    challengeNumber.should.be.a('string');
+  });
+
+  it("should return the current mining target when requested", async function() {
+    let miningTarget = await contract.getMiningTarget();
+    miningTarget.should.be.bignumber.above(0);
+  });
+
+  it("should return the current mining difficulty when requested", async function() {
+    let miningDifficulty = await contract.getMiningDifficulty();
+    miningDifficulty.should.be.bignumber.above(0);
+  });
+
+  it("should return the current mining reward when requested", async function() {
+    let miningReward = await contract.getMiningReward();
+    miningReward.should.be.bignumber.above(0); // TODO - check for correct value
+  })
+
 });
