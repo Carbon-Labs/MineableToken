@@ -173,7 +173,6 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
       if(rewardEra == 1) {
         return startingMiningReward * 10**uint(decimals);
       } else {
-
         return (startingMiningReward * 10**uint(decimals) ).div( 2**(rewardEra-1) );
       }
     }
@@ -181,11 +180,33 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     // TODO
     function mint() checkGasPrice(tx.gasprice) public returns (bool success) {
 
-      emit Debug(tx.gasprice, gasPriceLimit);
+
+
     }
 
     // TODO
-    function _startNewMiningEpoch() internal {}
+    function _startNewMiningEpoch() internal {
+
+      //if max supply for the era will be exceeded next reward round then enter the new era before that happens
+      //40 is the final reward era, almost all tokens minted
+      //once the final era is reached, more tokens will not be given out because the assert function
+      if( tokensMinted.add(getMiningReward()) > maxSupplyForEra && rewardEra < 40)
+      {
+        rewardEra = rewardEra + 1;
+      }
+
+      //set the next minted supply at which the era will change
+      maxSupplyForEra = totalSupply_ - totalSupply_.div( 2**(rewardEra));
+
+      epochCount = epochCount.add(1);
+
+      _adjustDifficulty();
+
+      //make the latest ethereum block hash a part of the next challenge for PoW to prevent pre-mining future blocks
+      //do this last since this is a protection mechanism in the mint() function
+      challengeNumber = block.blockhash(block.number - 1);
+
+    }
 
     // Calculates the difficulty target at the end of every epoch
     function _adjustDifficulty() internal {
