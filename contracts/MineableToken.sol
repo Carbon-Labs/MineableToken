@@ -1,5 +1,18 @@
 pragma solidity ^0.4.23;
 
+// ----------------------------------------------------------------------------
+// Gas Limited / Controllable contract
+// Mineable ERC20 (ERC918) Token using Proof Of Work
+//
+// Based off the original mineable contract developed for '0xBitcoin Token'
+//
+// Developed by Liberation Online - http://liberation.online
+// Creators of the KIWI Token - http://thekiwi.online
+//
+// For more information: https://github.com/liberation-online/MineableToken
+//
+// ----------------------------------------------------------------------------
+
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
@@ -73,11 +86,15 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     tokensMinted = 0;
     maxSupplyForEra = totalSupply_.div(2);
     latestDifficultyPeriodStarted = block.number;
+    challengeNumber = block.blockhash(block.number - 1);
 
     //these are default values that will be overwritten by the contract automatically or
     //can be changed by the contract owner calling a function
     miningTarget = _max_target;
     gasPriceLimit = 999;
+
+    //original contract called _startNewMiningEpoch();
+    //this is not really needed - we have already set all the values
 
   }
 
@@ -126,7 +143,6 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     * Mining related functions
     */
     //function mint(uint256 nonce, bytes32 challenge_digest) public returns (bool success);
-    //function getMiningReward() public constant returns (uint);
 
     function getChallengeNumber() public constant returns (bytes32) {
         return challengeNumber;
@@ -151,15 +167,17 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
       }
     }
 
+    // TODO
     function mint() checkGasPrice(tx.gasprice) public returns (bool success) {
-
-
-
-
-
 
       emit Debug(tx.gasprice, gasPriceLimit);
     }
+
+    // TODO
+    function _startNewMiningEpoch() internal {}
+
+    // TODO
+    function _reAdjustDifficulty() internal {}
 
     //Useful for debugging miners
     function getMintDigest(uint256 nonce, bytes32 challenge_digest, bytes32 challenge_number) public view returns (bytes32 digesttest) {
