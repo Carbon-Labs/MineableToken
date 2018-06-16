@@ -30,9 +30,9 @@
         <span class='fraction'>4/8</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">69.23% </span>
+        <span class="strong">60% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>9/13</span>
+        <span class='fraction'>9/15</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">81.82% </span>
@@ -226,7 +226,37 @@
 181
 182
 183
-184</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -307,7 +337,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -361,7 +390,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -387,11 +415,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -410,6 +440,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.23;
+&nbsp;
+// ----------------------------------------------------------------------------
+// Gas Limited / Controllable contract
+// Mineable ERC20 (ERC918) Token using Proof Of Work
+//
+// Based off the original mineable contract developed for '0xBitcoin Token'
+//
+// Developed by Liberation Online - http://liberation.online
+// Creators of the KIWI Token - http://thekiwi.online
+//
+// For more information: https://github.com/liberation-online/MineableToken
+//
+// Provided as is. Use at your own risk.
+//
+// ----------------------------------------------------------------------------
 &nbsp;
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
@@ -494,7 +539,6 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     //original contract called _startNewMiningEpoch();
     //this is not really needed - we have already set all the values
 &nbsp;
-&nbsp;
   }
 &nbsp;
   //modifier used for checking that the txn.gasPrice is lower than the limit set
@@ -542,7 +586,6 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     * Mining related functions
     */
     //function mint(uint256 nonce, bytes32 challenge_digest) public returns (bool success);
-    //function getMiningReward() public constant returns (uint);
 &nbsp;
     function getChallengeNumber() public constant returns (bytes32) {
         return challengeNumber;
@@ -567,15 +610,17 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
       }
     }
 &nbsp;
+    // TODO
     function mint() checkGasPrice(tx.gasprice) public returns (bool success) {
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
 &nbsp;
       emit Debug(tx.gasprice, gasPriceLimit);
     }
+&nbsp;
+    // TODO
+<span class="fstat-no" title="function not covered" >    function _startNewMiningEpoch() interna</span>l {}
+&nbsp;
+    // TODO
+<span class="fstat-no" title="function not covered" >    function _reAdjustDifficulty() interna</span>l {}
 &nbsp;
     //Useful for debugging miners
 <span class="fstat-no" title="function not covered" >    function getMintDigest(uint256 nonce, bytes32 challenge_digest, bytes32 challenge_number) public view returns (bytes32 digesttest</span>) {
@@ -598,7 +643,7 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 21:37:08 GMT+0200 (CEST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Jun 16 2018 07:47:42 GMT+0200 (CEST)
 </div>
 </div>
 <script src="../prettify.js"></script>

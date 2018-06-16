@@ -11,10 +11,20 @@ pragma solidity ^0.4.23;
 //
 // For more information: https://github.com/liberation-online/MineableToken
 //
+// Provided as is. Use at your own risk.
+//
 // ----------------------------------------------------------------------------
 
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+
+library ExtendedMath {
+    //return the smaller of the two inputs (a or b)
+    function limitLessThan(uint a, uint b) internal pure returns (uint c) {
+        if(a > b) return b;
+        return a;
+    }
+}
 
 interface EIP918Interface  {
 
@@ -35,6 +45,8 @@ interface EIP918Interface  {
  * BasicToken is ERC20Basic
  */
 contract MineableToken is Pausable, StandardToken, EIP918Interface {
+
+  using ExtendedMath for uint;
 
   // Events
   event GasPriceSet(uint8 _gasPrice);
@@ -57,9 +69,9 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
   uint public miningTarget;
   uint public latestDifficultyPeriodStarted;
   uint public epochCount;                       //number of 'blocks' mined
-  uint public blocks_per_readjustment;
-  uint public  _min_target;
-  uint public  _max_target;
+  uint public _blocks_per_adjustment;
+  uint public _min_target;
+  uint public _max_target;
   uint public rewardEra;
   uint public maxSupplyForEra;
   uint public lastRewardAmount;
@@ -75,7 +87,7 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     name = _name;
     symbol = _symbol;
     decimals = _decimals;
-    blocks_per_readjustment = 512;                // TODO: set in constructor
+    _blocks_per_adjustment = 512;                // TODO: set in constructor
     startingMiningReward = 50;                    // TODO: set in constructor
     totalSupply_ = 1000000 * 10**uint(decimals);  // TODO: read from constructor
 
@@ -111,10 +123,9 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
    * @dev transfer out any accidently sent ERC20 tokens
    * @param tokenAddress The contract address of the token
    * @param tokens The amount of tokens to transfer
-   * TODO - ERC20Interface missing
    */
   function transferAnyERC20Token(address tokenAddress, uint tokens) public onlyOwner returns (bool success) {
-    //return ERC20Interface(tokenAddress).transfer(owner, tokens);
+    return StandardToken(tokenAddress).transfer(owner, tokens);
   }
 
   /**
@@ -176,8 +187,43 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     // TODO
     function _startNewMiningEpoch() internal {}
 
-    // TODO
-    function _reAdjustDifficulty() internal {}
+    // Calculates the difficulty target at the end of every epoch
+    function _adjustDifficulty() internal {
+
+      uint ethBlocksSinceLastDifficultyPeriod = block.number - latestDifficultyPeriodStarted;
+      uint epochsMined = _blocks_per_adjustment;
+      uint targetEthBlocksPerDiffPeriod = epochsMined * 12; //TODO - calculate this with a variable should be 12 times slower than ethereum
+
+      // less eth blocks mined than expected
+      if( ethBlocksSinceLastDifficultyPeriod < targetEthBlocksPerDiffPeriod ) {
+
+        uint excess_block_pct = (targetEthBlocksPerDiffPeriod.mul(100)).div( ethBlocksSinceLastDifficultyPeriod );
+        uint excess_block_pct_extra = excess_block_pct.sub(100).limitLessThan(1000); //always between 0 and 1000
+
+        //make it harder
+        miningTarget = miningTarget.sub(miningTarget.div(2000).mul(excess_block_pct_extra));   //by up to 50 %
+
+      } else {
+
+        uint shortage_block_pct = (ethBlocksSinceLastDifficultyPeriod.mul(100)).div( targetEthBlocksPerDiffPeriod );
+        uint shortage_block_pct_extra = shortage_block_pct.sub(100).limitLessThan(1000); //always between 0 and 1000
+
+        //make it easier
+        miningTarget = miningTarget.add(miningTarget.div(2000).mul(shortage_block_pct_extra));   //by up to 50 %
+      }
+
+      latestDifficultyPeriodStarted = block.number;
+
+      if(miningTarget < _min_target) //very difficult
+      {
+          miningTarget = _min_target;
+      }
+
+      if(miningTarget > _max_target) //very easy
+      {
+        miningTarget = _max_target;
+      }
+    }
 
     //Useful for debugging miners
     function getMintDigest(uint256 nonce, bytes32 challenge_digest, bytes32 challenge_number) public view returns (bytes32 digesttest) {
