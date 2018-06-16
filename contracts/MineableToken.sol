@@ -81,6 +81,7 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
 
   mapping(address => uint) balances;
   mapping(address => mapping(address => uint)) allowed;
+  mapping(bytes32 => bytes32) solutionForChallenge;
 
   //Constructor
   constructor(string _name, string _symbol, uint8 _decimals) public {
@@ -153,7 +154,6 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
    /**
     * Mining related functions
     */
-    //function mint(uint256 nonce, bytes32 challenge_digest) public returns (bool success);
 
     function getChallengeNumber() public constant returns (bytes32) {
         return challengeNumber;
@@ -178,13 +178,42 @@ contract MineableToken is Pausable, StandardToken, EIP918Interface {
     }
 
     // TODO
-    function mint() checkGasPrice(tx.gasprice) public returns (bool success) {
+    function mint(uint256 nonce, bytes32 challenge_digest) checkGasPrice(tx.gasprice) public returns (bool success) {
 
+      //the PoW must contain work that includes a recent ethereum block hash (challenge number) and the msg.sender's address to prevent MITM attacks
+      bytes32 digest =  keccak256(challengeNumber, msg.sender, nonce);
 
+      //the challenge digest must match the expected
+      if (digest != challenge_digest) revert();
+
+      //the digest must be smaller than the target
+      if(uint256(digest) > miningTarget) revert();
+
+      //only allow one reward for each challenge
+      bytes32 solution = solutionForChallenge[challengeNumber];
+      solutionForChallenge[challengeNumber] = digest;
+      if(solution != 0x0) revert();  //prevent the same answer from awarding twice
+
+      uint reward_amount = getMiningReward();
+      balances[msg.sender] = balances[msg.sender].add(reward_amount);
+      tokensMinted = tokensMinted.add(reward_amount);
+
+      //Cannot mint more tokens than there are
+      assert(tokensMinted <= maxSupplyForEra);
+
+      //set readonly diagnostics data
+      lastRewardTo = msg.sender;
+      lastRewardAmount = reward_amount;
+      lastRewardEthBlockNumber = block.number;
+
+      _startNewMiningEpoch();
+
+      Mint(msg.sender, reward_amount, epochCount, challengeNumber );
+
+      return true;
 
     }
 
-    // TODO
     function _startNewMiningEpoch() internal {
 
       //if max supply for the era will be exceeded next reward round then enter the new era before that happens
